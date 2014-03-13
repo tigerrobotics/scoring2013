@@ -16,7 +16,7 @@ $match = $_GET['m1'];
 $fileName = "./" . $team1 . "/" . $match . ".csv";
 $csvData = file_get_contents($fileName);
 //print_r($csvData);
-
+//goof
 $lines = explode("\n", $csvData);
 $timestamps = array();
 $actions = array();
