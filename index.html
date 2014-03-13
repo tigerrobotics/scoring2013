@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <title>3946 - Logging</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable-no">
+    <!-- Bootstrap -->
+    <link href="static/css/bootstrap.css" rel="stylesheet" media="screen">
+
+    <script type="text/javascript">
+    currentTime = setInterval(function (){displayTimer();}, 500);
+     //disable all of the buttons
+    
+    alert("Thank you all for Scoring!");
+
+  var pt3Total = 0;
+  var pt2LeftTotal = 0;
+  var pt2RightTotal = 0;
+  var missedTotal = 0;
+  var dunkptTotal = 0;
+  var pt1Total =0;
+  var auto_time_left = 15; //15 in comp
+  var teleOp_time_left = 120; // 120 in comp
+  var isAutonomous = true;
+  var actionDict = new Array();
+  var scores = new Array();
+
+
+  function startAutonomous() {
+    recordAction("BM");
+
+
+    clearInterval(currentTime);
+    countDownTimer = setInterval(function (){startAutoCountDown();}, 1000);
+    document.getElementById('labelHeader').innerHTML = "<h1>Autonomous!</h1>";
+    mainBlock = document.getElementById('mainBlock');
+    teamNumber = document.getElementById('teamNumber').value;
+    button = document.getElementById('beginButton');
+    button.innerHTML= "End Match?";
+    button.setAttribute('onclick', "submitScores()");
+
+    
+    
+
+    //enable all of the buttons
+    document.getElementById('pt3Button').disabled = false;
+    document.getElementById('pt2LeftButton').disabled = false;
+    document.getElementById('pt2RightButton').disabled = false;
+    document.getElementById('missedButton').disabled = false;
+    document.getElementById('pt1Button').disabled = false;
+    document.getElementById('switchToTeleOpButton').disabled = false;
+
+  }
+
+  function startTeleOp () {
+    clearInterval(countDownTimer);
+    teleOpTimer = setInterval(function (){startTeleOpCountDown();},1000);
+    isAutonomous = false;
+    //store all scores and timestamps here
+    var auto3ptTotal = pt3Total * 3;
+
+    //reset variables after storing them
+    pt3Total = 0;
+    pt2LeftTotal = 0;
+    pt2RightTotal = 0;
+    missedTotal = 0;
+    pt1Total = 0;
+    //update buttons
+    document.getElementById('pt3TotalID').innerHTML=pt3Total;
+    document.getElementById('pt2LeftTotalID').innerHTML=pt2LeftTotal;
+    document.getElementById('pt2RightTotalID').innerHTML=pt2RightTotal;
+    document.getElementById('missedTotalID').innerHTML=missedTotal;
+    document.getElementById('pt1TotalID').innerHTML=pt1Total;
+
+    //show rung buttons
+    document.getElementById('bar1Button').disabled = false;
+    document.getElementById('dunkptButton').disabled = false;
+    document.getElementById('fellButton').disabled = false;
+    document.getElementById('switchToTeleOpButton').disabled = true;
+    
+    
+  }
+
+
+  function displayTimer () {
+    var d=new Date();
+    var t=d.toLocaleTimeString();
+
+    document.getElementById("timer").innerHTML=t;
+  }
+  function startAutoCountDown () {
+    
+    auto_time_left --;
+    document.getElementById('timer').innerHTML= auto_time_left;
+
+    if (auto_time_left <= 0) {
+      clearInterval(countDownTimer);
+      startTeleOp();
+      
+      
+    }
+  }
+
+  function startTeleOpCountDown () {
+    teleOp_time_left --;
+    document.getElementById('labelHeader').innerHTML= "<h1>Tele Operated!</h1>";
+    document.getElementById('timer').innerHTML=teleOp_time_left;
+
+    
+
+    //teleOp over
+    if (teleOp_time_left <= 0) {
+      clearInterval(teleOpTimer);
+
+      var timerText = '<button class="btn btn-primary" onclick="submitScores()" style="width: 250px; height: 50px;" id="submitScoresButton">Submit Scores</button>';
+        document.getElementById('timer').innerHTML=timerText;
+        document.getElementById('pt3Button').disabled = true;
+        document.getElementById('pt2LeftButton').disabled = true;
+        document.getElementById('pt2RightButton').disabled = true;
+        document.getElementById('missedButton').disabled = true;
+        document.getElementById('pt1Button').disabled = true;
+        document.getElementById('bar1Button').disabled = true;
+        document.getElementById('bar2Button').disabled = true;
+        document.getElementById('bar3Button').disabled = true;
+        document.getElementById('dunkptButton').disabled = true;
+        document.getElementById('fellButton').disabled = true;
+
+        
+        
+    }
+  }
+
+
+  //BAR functions
+  function reachedBar1 () {
+    document.getElementById('bar2Button').disabled = false;
+    document.getElementById('bar1Button').disabled = true;
+    recordAction('R1');
+    
+  }
+  function reachedBar2 () {
+    document.getElementById('bar2Button').disabled = true;
+    document.getElementById('bar3Button').disabled = false;
+    recordAction('R2');
+  }
+  function reachedBar3 () {
+    document.getElementById('bar3Button').disabled = true;
+    recordAction('R3');
+  }
+  function resetBars () {
+    //somehow record that they fell?
+    //enagle 1, diabled 2,3
+    document.getElementById('bar1Button').disabled = false;
+    document.getElementById('bar2Button').disabled = true;
+    document.getElementById('bar3Button').disabled = true;
+    recordAction('RF');
+  }
+
+
+  //INc Functions
+
+
+
+  function inc3pt() {
+    pt3Total ++;
+    document.getElementById('pt3TotalID').innerHTML=pt3Total;
+    if (isAutonomous) {
+      recordAction('A3');
+    } else {
+      recordAction('T3');
+    }
+  }
+  function inc2ptLeft() {
+    pt2LeftTotal ++;
+    document.getElementById('pt2LeftTotalID').innerHTML=pt2LeftTotal;
+    if (isAutonomous) {
+      recordAction('A2');
+    } else {
+      recordAction('T2');
+    }
+  }
+  function inc2ptRight() {
+    pt2RightTotal ++;
+    document.getElementById('pt2RightTotalID').innerHTML=pt2RightTotal;
+    if (isAutonomous) {
+      recordAction('A2');
+    } else {
+      recordAction('T2');
+    }
+  }
+  function incMissed() {
+    missedTotal ++;
+    document.getElementById('missedTotalID').innerHTML=missedTotal;
+    if (isAutonomous) {
+      recordAction('A0');
+    } else {
+      recordAction('T0');
+    }
+  }
+  function incDunked () {
+    dunkptTotal ++;
+    document.getElementById('dunkptID').innerHTML=dunkptTotal;
+    recordAction('R4');
+  }
+  function inc1pt () {
+    pt1Total ++;
+    document.getElementById('pt1TotalID').innerHTML = pt1Total;
+    if (isAutonomous) {
+      recordAction('A1');
+    } else {
+      recordAction('T1');
+    }
+
+  }
+
+  function recordAction (action) {
+    var timestamp=new Date();
+    var day = timestamp.getDate();
+    var hours = timestamp.getHours();
+    var minutes = timestamp.getMinutes();
+    var seconds = timestamp.getSeconds();
+    var dateString = hours +":" + minutes + ":" + seconds;
+    // if (dateString.indexOf("CDT") !== -1) {
+    //   dateString = dateString.substring(0, dateString.length - 4);
+    // }
+    // if (dateString.indexOf("PM") !== -1) {
+    //   dateString = dateString.substring(0, dateString.length - 3);
+    // }
+    // if (dateString.indexOf("AM") !== -1) {
+    //   dateString = dateString.substring(0, dateString.length - 3);
+    // }
+    var finalTimestamp = day + " " + dateString;
+    if (action == "BM") {
+      actionDict['beginTime'] = finalTimestamp;
+    } else {
+      scores.push([finalTimestamp,action]);
+    }
+  }
+
+  function submitScores () {
+    
+    
+    //send scores here
+    var team = document.getElementById('teamNumber').value;
+    if (team) {
+
+
+      
+      
+      //for each pair in scores
+      for (var i = 0; i < scores.length; i++) {
+        //key is integer value of location converted to string
+        key = i.toString();
+        val = scores[i][0] + "," + scores[i][1];
+        
+        actionDict[key] = val;
+        //debugString += key + " -> " + actionDict[key] + "<br>";
+      };
+
+      // for (var i = 0; i < actionDict.length; i++) {
+      //   debugString += actionDict[i.toString()].toString()
+      // };
+      actionDict['teamName'] = team;
+      actionDict['len'] = scores.length;
+
+      //actionDict['beginTime'] = beginTime;
+      //document.getElementById('submitScoresButton').value = "Resubmit?";
+      //alert(scores.length);
+      if (scores.length == 0) {
+        alert('No Data To Send. Thank you, come again. \n\n Page will now Reload.');
+        location.reload();
+      } else {
+        alert("Submitted Scores for Team: " + team + "!\n Thank you!");
+        
+
+        post_to_url("phplogger.php", actionDict);
+        endMatch();
+        
+      }
+
+      
+    } else {
+      alert('Please enter a team number!');
+    }
+
+  }
+
+  // function writeToDisk (writeString) {
+  //   alert('<?php echo test ?>');
+  // }
+
+  function endMatch() {
+    mainBlock = document.getElementById('mainBlock');
+    clearInterval(countDownTimer);
+    clearInterval(teleOpTimer);
+    endedMatchHTML = "<h1 style='text-align: center;'>Please Wait to Be Redirected...</h1>";
+    mainBlock.innerHTML=endedMatchHTML;
+    document.getElementById('labelHeader').innerHTML = "<h1>Post-Match!</h1>";
+
+    //also cancel timers and such
+  }
+
+  function post_to_url(path, params, method) {
+    method = method || "post"; // Set method to post by default, if not specified.
+
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+  
+
+        
+
+
+</script>
+
+      </head>
+
+<!-- BODYBODYBODYBODYBODYBODYBODYBODYBODYBODYBODYBODYBODYBODYBODYBODYBODYBODY -->
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+          <div class='container-fluid'>
+            <a class='brand'>Team:</a>
+           
+            <input id="teamNumber" class="input-mini navbar-search pull-left" type="number" placeholder="3946">
+            <button class="btn" onclick="startAutonomous()" id='beginButton'>Begin Match</button>
+          
+          </div>
+      </div>
+    </div>
+
+    
+    
+    <!-- label -->
+    <div class="row" style="text-align: center;"><div class="span6" id="labelHeader"><h1>Pre-Match!</h1></div></div>
+    <div class="row-fluid">
+      <div class="span6" style="text-align: center;"><b id="timer" style="font-size: 30px">numbers</b></div>
+    </div>
+    <div class="row" style="text-align: center;">
+          <button class="btn btn-info" id="switchToTeleOpButton" onclick="startTeleOp()">Manually Switch To Tele-Op</button>
+    </div>
+    <hr>
+
+    <div id="mainBlock">
+      <div class="row">
+        <div class="span12">
+          <b>GOALS:</b>
+        </div>
+
+        <div class="span2" style="text-align: center">
+          <button class="btn btn-primary" onclick="inc3pt()" id="pt3Button">3 Pt: <div id="pt3TotalID">0</div></button> 
+        </div>
+
+
+
+        <div class="span2" style="text-align: center">
+          <div class="btn-group">
+            <button class="btn" onclick="inc2ptLeft()" id="pt2LeftButton">2 Pt Left: <div id="pt2LeftTotalID">0</div></button>
+            <button class="btn" onclick="inc2ptRight()" id="pt2RightButton">2 Pt Right: <div id="pt2RightTotalID">0</div></button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="span6" style="text-align: center;">
+            <button class="btn btn-info" onclick="inc1pt()" style="width: 100px;" id="pt1Button">1 Pt Gnd <div id="pt1TotalID">0</div></button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="span6" style="text-align: center">
+            <button class="btn btn-warning" onclick="incMissed()" style="width: 250px" id="missedButton">Missed: <div id="missedTotalID">0</div></button>
+          </div>
+
+        </div>
+        <hr>
+        
+
+        <div class="span12" id="barDiv">
+          <b>PYRAMID:</b>
+        </div>
+        <!-- Climbing Progression-->
+        <div class="row" style="text-align: center;">
+          <div class="btn-group">
+            <button class="btn" onclick="reachedBar1()" id="bar1Button" style="width: 75px;">1</button>
+            <button class="btn" onclick="reachedBar2()" id="bar2Button" style="width: 75px;">2</button>
+            <button class="btn" onclick="reachedBar3()" id="bar3Button" style="width: 75px;">3</button>
+            <button class="btn btn-danger" onclick="resetBars()" id="fellButton" style="width: 50px;">Fell!</button>
+          </div>
+        </div>
+        <div class="row" style="text-align: center;">
+          <br>
+          <button class="btn btn-inverse" style="width: 250px;" onclick="incDunked()" id="dunkptButton">Dunked: <div id="dunkptID">0</div></button>
+        </div>
+
+
+      </div>
+
+
+    </div>
+    
+Strategy Team... is Best Team!
+
+    <script type="text/javascript">
+    document.getElementById('pt3Button').disabled = true;
+    document.getElementById('pt2LeftButton').disabled = true;
+    document.getElementById('pt2RightButton').disabled = true;
+    document.getElementById('missedButton').disabled = true;
+    document.getElementById('pt1Button').disabled = true;
+    document.getElementById('bar1Button').disabled = true;
+    document.getElementById('bar2Button').disabled = true;
+    document.getElementById('bar3Button').disabled = true;
+    document.getElementById('dunkptButton').disabled = true;
+    document.getElementById('fellButton').disabled = true;
+    document.getElementById('switchToTeleOpButton').disabled = true;
+    
+    </script>
+    
+    <script src="static/js/bootstrap.min.js"></script>
+    <script scr="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+
+  </body>
+</html>
